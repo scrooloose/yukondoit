@@ -1,0 +1,7 @@
+[package]
+name = "solitaire"
+version = "0.1.0"
+authors = ["Martin Grenfell <martin.grenfell@gmail.com>"]
+
+[dependencies]
+rand = "*"
