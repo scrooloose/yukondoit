@@ -1,8 +1,9 @@
 extern crate rand;
-
+use self::SUIT::*;
+use std::slice::Iter;
 use rand::{thread_rng, Rng};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 enum SUIT {
     CLUB,
     DIAMOND,
@@ -10,7 +11,12 @@ enum SUIT {
     SPADE,
 }
 
-
+impl SUIT {
+    pub fn iterator() -> Iter<'static, SUIT> {
+        static SUITS: [SUIT;  4] = [CLUB, DIAMOND, HEART, SPADE];
+        return SUITS.into_iter();
+    }
+}
 
 struct Card {
     suit: SUIT,
@@ -37,23 +43,11 @@ struct Deck {
 impl Deck {
     pub fn new() -> Self {
         let mut cards: Vec<Card> = vec![];
-
-        for c in 1..14 {
-            cards.push(Card {rank: c, suit: SUIT::CLUB});
+        for suit in SUIT::iterator() {
+            for c in 1..14 {
+                cards.push(Card {rank: c, suit: *suit});
+            }
         }
-
-        for c in 1..14 {
-            cards.push(Card {rank: c, suit: SUIT::DIAMOND});
-        }
-
-        for c in 1..14 {
-            cards.push(Card {rank: c, suit: SUIT::HEART});
-        }
-
-        for c in 1..14 {
-            cards.push(Card {rank: c, suit: SUIT::SPADE});
-        }
-
         return Deck { cards: cards };
     }
 
