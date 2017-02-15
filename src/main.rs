@@ -1,8 +1,9 @@
 extern crate rand;
-
+use self::SUIT::*;
+use std::slice::Iter;
 use rand::{thread_rng, Rng};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 enum SUIT {
     CLUB,
     DIAMOND,
@@ -10,7 +11,21 @@ enum SUIT {
     SPADE,
 }
 
+impl SUIT {
+    pub fn iterator() -> Iter<'static, SUIT> {
+        static SUITS: [SUIT;  4] = [CLUB, DIAMOND, HEART, SPADE];
+        return SUITS.into_iter();
+    }
 
+    pub fn char_for(value: SUIT) -> &'static str {
+        return match value {
+            CLUB => "C",
+            DIAMOND => "D",
+            HEART => "H",
+            SPADE => "S"
+        }
+    }
+}
 
 struct Card {
     suit: SUIT,
@@ -19,14 +34,44 @@ struct Card {
 
 impl Card {
     fn to_string(&self) -> String {
-        return format!("RANK: {}, SUIT: {:?}", self.rank, self.suit);
+        return format!("{}{}", SUIT::char_for(self.suit), self.rank);
     }
 }
 
-// struct Table {
-//     fountain_piles: Vec<FoundationPile>,
-//     Piles: Vec<Pile>,
-// }
+
+struct Pile {
+    hidden_index: u8,
+    cards: Vec<Card>,
+}
+
+
+struct Table {
+    piles: Vec<Pile>,
+}
+
+impl Table {
+    fn draw(&self) {
+        let mut row = 0;
+        loop {
+            let mut any_match = false;
+            for pile in self.piles.iter() {
+                match pile.cards.get(row) {
+                    Some(card) => {
+                        print!("{}", card.to_string());
+                        any_match = true;
+                    },
+                    None => print!("."),
+                }
+                print!("\t")
+            }
+            print!("\n");
+            if ! any_match {
+                break;
+            }
+            row = row + 1;
+        }
+    }
+}
 
 
 struct Deck {
@@ -37,23 +82,11 @@ struct Deck {
 impl Deck {
     pub fn new() -> Self {
         let mut cards: Vec<Card> = vec![];
-
-        for c in 1..14 {
-            cards.push(Card {rank: c, suit: SUIT::CLUB});
+        for suit in SUIT::iterator() {
+            for c in 1..14 {
+                cards.push(Card {rank: c, suit: *suit});
+            }
         }
-
-        for c in 1..14 {
-            cards.push(Card {rank: c, suit: SUIT::DIAMOND});
-        }
-
-        for c in 1..14 {
-            cards.push(Card {rank: c, suit: SUIT::HEART});
-        }
-
-        for c in 1..14 {
-            cards.push(Card {rank: c, suit: SUIT::SPADE});
-        }
-
         return Deck { cards: cards };
     }
 
@@ -66,9 +99,16 @@ impl Deck {
 
 fn main() {
 
+    //SUIT::char_for(DIAMOND);
     let mut deck = Deck::new();
     deck.shuffle();
-    for c in deck.cards {
-        println!("{}", c.to_string());
-    }
+    let pile = Pile{cards: deck.cards, hidden_index: 0};
+    let piles = vec![
+        pile,
+        Pile {cards: vec![], hidden_index:0 },
+        Pile {cards: vec![], hidden_index:0 },
+        Pile {cards: vec![], hidden_index:0 },
+    ];
+    let t = Table{piles: piles};
+    t.draw();
 }
