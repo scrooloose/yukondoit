@@ -27,6 +27,7 @@ impl SUIT {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
 struct Card {
     suit: SUIT,
     rank: u8,
@@ -102,12 +103,20 @@ fn main() {
     //SUIT::char_for(DIAMOND);
     let mut deck = Deck::new();
     deck.shuffle();
-    let pile = Pile{cards: deck.cards, hidden_index: 0};
+    let pile1 = Pile {cards: deck.cards[0..1].to_vec(), hidden_index: 0};
+    let pile2 = Pile {cards: deck.cards[1..7].to_vec(), hidden_index: 1};
+    let pile3 = Pile {cards: deck.cards[7..14].to_vec(), hidden_index: 2};
+    let pile4 = Pile {cards: deck.cards[14..22].to_vec(), hidden_index: 3};
+    let pile5 = Pile {cards: deck.cards[22..31].to_vec(), hidden_index: 4};
+    let pile6 = Pile {cards: deck.cards[31..41].to_vec(), hidden_index: 5};
+    let pile7 = Pile {cards: deck.cards[41..52].to_vec(), hidden_index: 6};
+    // let pile3 = Pile {cards: deck.cards, hidden_index: 0};
+    // let pile4 = Pile {cards: deck.cards, hidden_index: 0};
+    // let pile5 = Pile {cards: deck.cards, hidden_index: 0};
+    // let pile6 = Pile {cards: deck.cards, hidden_index: 0};
+    // let pile7 = Pile {cards: deck.cards, hidden_index: 0};
     let piles = vec![
-        pile,
-        Pile {cards: vec![], hidden_index:0 },
-        Pile {cards: vec![], hidden_index:0 },
-        Pile {cards: vec![], hidden_index:0 },
+        pile1, pile2, pile3, pile4, pile5, pile6, pile7,
     ];
     let t = Table{piles: piles};
     t.draw();
