@@ -1,4 +1,8 @@
+extern crate unicode;
 extern crate rand;
+extern crate unicode_names;
+
+
 use self::SUIT::*;
 use std::slice::Iter;
 use rand::{thread_rng, Rng};
@@ -25,6 +29,15 @@ impl SUIT {
             SPADE => "S"
         }
     }
+
+    pub fn name_for(value: SUIT) -> &'static str {
+        return match value {
+            CLUB => "CLUBS",
+            DIAMOND => "DIAMONDS",
+            HEART => "HEARTS",
+            SPADE => "SPADES"
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -36,6 +49,41 @@ struct Card {
 impl Card {
     fn to_string(&self) -> String {
         return format!("{}{}", SUIT::char_for(self.suit), self.rank);
+    }
+
+    fn as_char(&self) -> String {
+        let name: String = format!("PLAYING CARD {} OF {}", self.rank_to_string(self.rank).to_string(), SUIT::name_for(self.suit));
+        return self.char_for(name);
+    }
+
+    fn char_for(&self, name: String) -> String {
+        match unicode_names::character(&name) {
+            Some(c) => {
+                return c.to_string();
+            },
+            None => {
+                return "X".to_string();
+            }
+        }
+    }
+
+    fn rank_to_string(&self, rank: u8) -> &str {
+        match(rank) {
+            1 =>  { return "ACE" },
+            2 =>  { return "TWO" },
+            3 =>  { return "THREE" },
+            4 =>  { return "FOUR" },
+            5 =>  { return "FIVE" },
+            6 =>  { return "SIX" },
+            7 =>  { return "SEVEN" },
+            8 =>  { return "EIGHT" },
+            9 =>  { return "NINE" },
+            10 => { return "TEN" },
+            11 => { return "JACK" },
+            12 => { return "QUEEN" },
+            13 => { return "KING" },
+            _  => { return "should never see this" },
+        }
     }
 }
 
@@ -59,9 +107,9 @@ impl Table {
                 match pile.cards.get(row) {
                     Some(card) => {
                         if row < pile.hidden_index {
-                            print!("X");
+                            print!("{}", "X")
                         } else {
-                            print!("{}", card.to_string());
+                            print!("{}", card.as_char());
                         }
                         any_match = true;
                     },
@@ -101,8 +149,11 @@ impl Deck {
     }
 }
 
-
 fn main() {
+    let card = Card { suit: SUIT::DIAMOND, rank: 1 };
+    print!("{}", card.as_char());
+
+    print!("{}", unicode::char::UNICODE_VERSION);
 
     //SUIT::char_for(DIAMOND);
     let mut deck = Deck::new();
