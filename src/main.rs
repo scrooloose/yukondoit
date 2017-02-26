@@ -41,7 +41,7 @@ impl Card {
 
 
 struct Pile {
-    hidden_index: u8,
+    hidden_index: usize,
     cards: Vec<Card>,
 }
 
@@ -58,7 +58,11 @@ impl Table {
             for pile in self.piles.iter() {
                 match pile.cards.get(row) {
                     Some(card) => {
-                        print!("{}", card.to_string());
+                        if (row < pile.hidden_index) {
+                            print!("X");
+                        } else {
+                            print!("{}", card.to_string());
+                        }
                         any_match = true;
                     },
                     None => print!("."),
@@ -110,11 +114,6 @@ fn main() {
     let pile5 = Pile {cards: deck.cards[22..31].to_vec(), hidden_index: 4};
     let pile6 = Pile {cards: deck.cards[31..41].to_vec(), hidden_index: 5};
     let pile7 = Pile {cards: deck.cards[41..52].to_vec(), hidden_index: 6};
-    // let pile3 = Pile {cards: deck.cards, hidden_index: 0};
-    // let pile4 = Pile {cards: deck.cards, hidden_index: 0};
-    // let pile5 = Pile {cards: deck.cards, hidden_index: 0};
-    // let pile6 = Pile {cards: deck.cards, hidden_index: 0};
-    // let pile7 = Pile {cards: deck.cards, hidden_index: 0};
     let piles = vec![
         pile1, pile2, pile3, pile4, pile5, pile6, pile7,
     ];
