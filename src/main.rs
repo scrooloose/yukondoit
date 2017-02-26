@@ -58,7 +58,7 @@ impl Table {
             for pile in self.piles.iter() {
                 match pile.cards.get(row) {
                     Some(card) => {
-                        if (row < pile.hidden_index) {
+                        if row < pile.hidden_index {
                             print!("X");
                         } else {
                             print!("{}", card.to_string());
