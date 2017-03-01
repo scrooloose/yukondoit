@@ -1,7 +1,7 @@
 extern crate rand;
 extern crate unicode_names;
 #[macro_use] extern crate itertools;
-
+use rand::{thread_rng, Rng};
 #[derive(Debug, Clone, Copy)]
 struct Card {
     suit: usize,
@@ -9,10 +9,12 @@ struct Card {
 }
 
 
-// fn shuffle(&mut self) {
-//     let mut rng = thread_rng();
-//     rng.shuffle(&mut self.cards);
-// }
+fn shuffle<T>(original_vector: Vec<T>) -> Vec<T> {
+    let mut shuffled_vector = original_vector;
+    let mut rng = thread_rng();
+    rng.shuffle(&mut shuffled_vector);
+    return shuffled_vector;
+}
 
 fn suit_name_by_index(suit_index: usize) -> Option<&'static str> {
     return match suit_index {
@@ -52,26 +54,29 @@ fn char_for_card(card: Card) -> Option<char>{
     return unicode_names::character(&unicode_name);
 }
 
-fn main() {
-    let mut row = 0;
+fn new_deck() -> Vec<Card>{
     let suits = 0..4;
     let ranks = 1..14;
-    let mut cards = iproduct!(suits, ranks).map(
+    return iproduct!(suits, ranks).map(
         |(suit_index, rank_index)| {
             Card {
                 suit: suit_index,
                 rank: rank_index,
             }
         }
-    );
+    ).collect::<Vec<_>>();
+}
 
+fn draw(deck: Vec<Card>) {
+    let mut cards = deck.iter();
+    let mut row = 0;
     for i in (0..7).cycle() {
         match cards.next() {
             Some(card) => {
                 if i == 0 {
                     print!("{}\t", row);
                 }
-                print!("{}", char_for_card(card).unwrap());
+                print!("{}", char_for_card(*card).unwrap());
                 if i == 6 {
                     row = row + 1;
                     print!("\n\n");
@@ -85,4 +90,10 @@ fn main() {
         }
     }
     print!("\n");
+}
+
+fn main() {
+    let deck = shuffle(new_deck());
+
+    draw(deck);
 }
