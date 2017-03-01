@@ -1,4 +1,3 @@
-extern crate unicode;
 extern crate rand;
 extern crate unicode_names;
 
@@ -52,7 +51,11 @@ impl Card {
     }
 
     fn as_char(&self) -> String {
-        let name: String = format!("PLAYING CARD {} OF {}", self.rank_to_string(self.rank).to_string(), SUIT::name_for(self.suit));
+        let name: String = format!(
+            "PLAYING CARD {} OF {}",
+            self.rank_to_string(self.rank).to_string(),
+            SUIT::name_for(self.suit)
+        );
         return self.char_for(name);
     }
 
@@ -62,7 +65,7 @@ impl Card {
                 return c.to_string();
             },
             None => {
-                return "X".to_string();
+                panic!(format!("unknown name {}", name));
             }
         }
     }
@@ -82,7 +85,7 @@ impl Card {
             11 => { return "JACK" },
             12 => { return "QUEEN" },
             13 => { return "KING" },
-            _  => { return "should never see this" },
+            _  => { panic!("should never see this") },
         }
     }
 }
@@ -117,7 +120,7 @@ impl Table {
                 }
                 print!("\t")
             }
-            print!("\n");
+            print!("\n\n");
             if ! any_match {
                 break;
             }
@@ -150,12 +153,6 @@ impl Deck {
 }
 
 fn main() {
-    let card = Card { suit: SUIT::DIAMOND, rank: 1 };
-    print!("{}", card.as_char());
-
-    print!("{}", unicode::char::UNICODE_VERSION);
-
-    //SUIT::char_for(DIAMOND);
     let mut deck = Deck::new();
     deck.shuffle();
     let pile1 = Pile {cards: deck.cards[0..1].to_vec(), hidden_index: 0};
