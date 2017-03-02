@@ -113,23 +113,23 @@ fn draw(table: Table) {
     );
     let mut row_index = 0;
     loop {
-        let mut row = format!("{}\t", row_index);
+        let mut row = vec![row_index.to_string()];
         let mut card_found = false;
         for (column_index, column) in table.columns.iter().enumerate() {
             let mut card_char = match column_card_iterators[column_index].next() {
                 Some(card) => {
                     card_found = true;
-                    char_for_card(*card).unwrap()
+                    char_for_card(*card).unwrap().to_string()
                 },
-                None => '-',
+                None => "-".to_string(),
             };
             if card_found && row_index < column.hidden_index {
-                card_char = 'X';
+                card_char = "X".to_string();
             };
-            row = format!("{}{}\t", row, card_char);
+            row.push(card_char);
         }
         if card_found {
-            print!("{}\n\n", row);
+            print!("{}\n\n", join(row, "\t"));
         } else {
             break;
         }
