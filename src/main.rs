@@ -71,6 +71,7 @@ fn new_deck() -> Vec<Card> {
 }
 
 struct Column {
+    hidden_index: usize,
     cards: Vec<Card>,
 }
 
@@ -85,7 +86,8 @@ fn deal(deck: Vec<Card>) -> Table {
     for column_number in 0..7 {
         columns.push(
             Column {
-                cards: deck[start..end].to_vec()
+                hidden_index: column_number,
+                cards: deck[start..end].to_vec(),
             }
         );
         start = end;
@@ -97,7 +99,7 @@ fn deal(deck: Vec<Card>) -> Table {
 }
 
 fn draw(table: Table) {
-    let mut column_iterators = table.columns.iter().map(
+    let mut column_card_iterators = table.columns.iter().map(
         |column| {
             column.cards.iter()
         }
@@ -105,7 +107,7 @@ fn draw(table: Table) {
     print!(
         "\t{}\n\n",
         join(
-            (1..1 + column_iterators.len()).map(|i| i.to_string()),
+            (1..1 + table.columns.len()).map(|i| i.to_string()),
             "\t"
         )
     );
@@ -113,13 +115,16 @@ fn draw(table: Table) {
     loop {
         let mut row = format!("{}\t", row_index);
         let mut card_found = false;
-        for column_iterator in column_iterators.iter_mut() {
-            let card_char = match column_iterator.next() {
+        for (column_index, column) in table.columns.iter().enumerate() {
+            let mut card_char = match column_card_iterators[column_index].next() {
                 Some(card) => {
                     card_found = true;
                     char_for_card(*card).unwrap()
                 },
                 None => '-',
+            };
+            if card_found && row_index < column.hidden_index {
+                card_char = 'X';
             };
             row = format!("{}{}\t", row, card_char);
         }
