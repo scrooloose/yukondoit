@@ -2,6 +2,7 @@ extern crate rand;
 extern crate unicode_names;
 #[macro_use] extern crate itertools;
 use rand::{thread_rng, Rng};
+use itertools::join;
 #[derive(Debug, Clone, Copy)]
 struct Card {
     suit: usize,
@@ -85,6 +86,13 @@ fn draw(columns: Vec<Vec<Card>>) {
             column.iter()
         }
     ).collect::<Vec<_>>();
+    print!(
+        "\t{}\n\n",
+        join(
+            (1..1+column_iterators.len()).map(|i| i.to_string()),
+            "\t"
+        )
+    );
     let mut row_index = 0;
     loop {
         let mut row = format!("{}\t", row_index);
