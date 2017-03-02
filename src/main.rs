@@ -48,7 +48,7 @@ fn rank_name_by_index(rank_index: usize) -> Option<&'static str> {
     }
 }
 
-fn char_for_card(card: Card) -> Option<char>{
+fn char_for_card(card: Card) -> Option<char> {
     let unicode_name = format!(
         "PLAYING CARD {} OF {}S",
         rank_name_by_index(card.rank).unwrap(),
