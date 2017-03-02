@@ -1,8 +1,10 @@
 extern crate rand;
 extern crate unicode_names;
 #[macro_use] extern crate itertools;
+
 use rand::{thread_rng, Rng};
 use itertools::join;
+
 #[derive(Debug, Clone, Copy)]
 struct Card {
     suit: usize,
@@ -68,28 +70,42 @@ fn new_deck() -> Vec<Card> {
     ).collect::<Vec<_>>();
 }
 
-fn deal(deck: Vec<Card>) -> Vec<Vec<Card>> {
+struct Column {
+    cards: Vec<Card>,
+}
+
+struct Table {
+    columns: Vec<Column>,
+}
+
+fn deal(deck: Vec<Card>) -> Table {
     let mut columns = vec![];
     let mut start = 0;
     let mut end = 1;
     for column_number in 0..7 {
-        columns.push(deck[start..end].to_vec());
+        columns.push(
+            Column {
+                cards: deck[start..end].to_vec()
+            }
+        );
         start = end;
         end = end + 6 + column_number;
     }
-    return columns;
+    return Table {
+        columns: columns,
+    }
 }
 
-fn draw(columns: Vec<Vec<Card>>) {
-    let mut column_iterators = columns.iter().map(
+fn draw(table: Table) {
+    let mut column_iterators = table.columns.iter().map(
         |column| {
-            column.iter()
+            column.cards.iter()
         }
     ).collect::<Vec<_>>();
     print!(
         "\t{}\n\n",
         join(
-            (1..1+column_iterators.len()).map(|i| i.to_string()),
+            (1..1 + column_iterators.len()).map(|i| i.to_string()),
             "\t"
         )
     );
@@ -120,6 +136,6 @@ fn draw(columns: Vec<Vec<Card>>) {
 fn main() {
     let deck = new_deck();
     let shuffled_deck = shuffle(deck);
-    let columns = deal(shuffled_deck);
-    draw(columns);
+    let table = deal(shuffled_deck);
+    draw(table);
 }
