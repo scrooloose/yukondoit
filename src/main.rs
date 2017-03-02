@@ -54,7 +54,7 @@ fn char_for_card(card: Card) -> Option<char>{
     return unicode_names::character(&unicode_name);
 }
 
-fn new_deck() -> Vec<Card>{
+fn new_deck() -> Vec<Card> {
     let suits = 0..4;
     let ranks = 1..14;
     return iproduct!(suits, ranks).map(
@@ -67,33 +67,51 @@ fn new_deck() -> Vec<Card>{
     ).collect::<Vec<_>>();
 }
 
-fn draw(deck: Vec<Card>) {
-    let mut cards = deck.iter();
-    let mut row = 0;
-    for i in (0..7).cycle() {
-        match cards.next() {
-            Some(card) => {
-                if i == 0 {
-                    print!("{}\t", row);
-                }
-                print!("{}", char_for_card(*card).unwrap());
-                if i == 6 {
-                    row = row + 1;
-                    print!("\n\n");
-                } else {
-                    print!("\t");
-                }
-            },
-            None => {
-                break;
-            }
+fn deal(deck: Vec<Card>) -> Vec<Vec<Card>> {
+    let mut columns = vec![];
+    for _ in 0..7 {
+        columns.push(vec![]);
+    }
+    for (card, column_index) in izip!(deck, (0..7).cycle()) {
+        columns[column_index].push(card);
+    }
+    return columns;
+}
+
+fn draw(columns: Vec<Vec<Card>>) {
+    let mut column_iterators = vec![];
+    for column in columns.iter() {
+        column_iterators.push(column.iter());
+    }
+    let mut row_index = 0;
+    loop {
+        let mut card_found = false;
+        let mut row = format!("{}\t", row_index);
+        for column_iterator in column_iterators.iter_mut() {
+            match column_iterator.next() {
+                Some(card) => {
+                    card_found = true;
+                    row = format!("{}{}", row, char_for_card(*card).unwrap());
+                },
+                None => {
+                    row = format!("{}-", row);
+                },
+            };
+            row += "\t";
         }
+        if card_found {
+            print!("{}\n\n", row);
+        } else {
+            break;
+        }
+        row_index += 1;
     }
     print!("\n");
 }
 
 fn main() {
-    let deck = shuffle(new_deck());
-
-    draw(deck);
+    let deck = new_deck();
+    let shuffled_deck = shuffle(deck);
+    let columns = deal(shuffled_deck);
+    draw(columns);
 }
