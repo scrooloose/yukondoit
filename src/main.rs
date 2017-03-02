@@ -86,19 +86,17 @@ fn draw(columns: Vec<Vec<Card>>) {
     ).collect::<Vec<_>>();
     let mut row_index = 0;
     loop {
-        let mut card_found = false;
         let mut row = format!("{}\t", row_index);
+        let mut card_found = false;
         for column_iterator in column_iterators.iter_mut() {
-            match column_iterator.next() {
+            let card_char = match column_iterator.next() {
                 Some(card) => {
                     card_found = true;
-                    row = format!("{}{}", row, char_for_card(*card).unwrap());
+                    char_for_card(*card).unwrap()
                 },
-                None => {
-                    row = format!("{}-", row);
-                },
+                None => '-',
             };
-            row += "\t";
+            row = format!("{}{}\t", row, card_char);
         }
         if card_found {
             print!("{}\n\n", row);
