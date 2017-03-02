@@ -69,11 +69,12 @@ fn new_deck() -> Vec<Card> {
 
 fn deal(deck: Vec<Card>) -> Vec<Vec<Card>> {
     let mut columns = vec![];
-    for _ in 0..7 {
-        columns.push(vec![]);
-    }
-    for (card, column_index) in izip!(deck, (0..7).cycle()) {
-        columns[column_index].push(card);
+    let mut start = 0;
+    let mut end = 1;
+    for column_number in 0..7 {
+        columns.push(deck[start..end].to_vec());
+        start = end;
+        end = end + 6 + column_number;
     }
     return columns;
 }
