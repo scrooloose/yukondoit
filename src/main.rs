@@ -79,10 +79,11 @@ fn deal(deck: Vec<Card>) -> Vec<Vec<Card>> {
 }
 
 fn draw(columns: Vec<Vec<Card>>) {
-    let mut column_iterators = vec![];
-    for column in columns.iter() {
-        column_iterators.push(column.iter());
-    }
+    let mut column_iterators = columns.iter().map(
+        |column| {
+            column.iter()
+        }
+    ).collect::<Vec<_>>();
     let mut row_index = 0;
     loop {
         let mut card_found = false;
