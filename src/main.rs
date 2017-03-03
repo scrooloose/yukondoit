@@ -1,114 +1,146 @@
 extern crate rand;
-use self::SUIT::*;
-use std::slice::Iter;
+extern crate unicode_names;
+#[macro_use] extern crate itertools;
+
 use rand::{thread_rng, Rng};
+use itertools::join;
 
 #[derive(Debug, Clone, Copy)]
-enum SUIT {
-    CLUB,
-    DIAMOND,
-    HEART,
-    SPADE,
-}
-
-impl SUIT {
-    pub fn iterator() -> Iter<'static, SUIT> {
-        static SUITS: [SUIT;  4] = [CLUB, DIAMOND, HEART, SPADE];
-        return SUITS.into_iter();
-    }
-
-    pub fn char_for(value: SUIT) -> &'static str {
-        return match value {
-            CLUB => "C",
-            DIAMOND => "D",
-            HEART => "H",
-            SPADE => "S"
-        }
-    }
-}
-
 struct Card {
-    suit: SUIT,
-    rank: u8,
+    suit: usize,
+    rank: usize,
 }
 
-impl Card {
-    fn to_string(&self) -> String {
-        return format!("{}{}", SUIT::char_for(self.suit), self.rank);
+
+fn shuffle<T>(original_vector: Vec<T>) -> Vec<T> {
+    let mut shuffled_vector = original_vector;
+    let mut rng = thread_rng();
+    rng.shuffle(&mut shuffled_vector);
+    return shuffled_vector;
+}
+
+fn suit_name_by_index(suit_index: usize) -> Option<&'static str> {
+    return match suit_index {
+        0 => Some("CLUB"),
+        1 => Some("DIAMOND"),
+        2 => Some("HEART"),
+        3 => Some("SPADE"),
+        _ => None,
     }
 }
 
+fn rank_name_by_index(rank_index: usize) -> Option<&'static str> {
+    return match rank_index {
+        1 => Some("ACE"),
+        2 => Some("TWO"),
+        3 => Some("THREE"),
+        4 => Some("FOUR"),
+        5 => Some("FIVE"),
+        6 => Some("SIX"),
+        7 => Some("SEVEN"),
+        8 => Some("EIGHT"),
+        9 => Some("NINE"),
+        10 => Some("TEN"),
+        11 => Some("JACK"),
+        12 => Some("QUEEN"),
+        13 => Some("KING"),
+        _ => None,
+    }
+}
 
-struct Pile {
-    hidden_index: u8,
+fn char_for_card(card: Card) -> Option<char> {
+    let unicode_name = format!(
+        "PLAYING CARD {} OF {}S",
+        rank_name_by_index(card.rank).unwrap(),
+        suit_name_by_index(card.suit).unwrap(),
+    );
+    return unicode_names::character(&unicode_name);
+}
+
+fn new_deck() -> Vec<Card> {
+    let suits = 0..4;
+    let ranks = 1..14;
+    return iproduct!(suits, ranks).map(
+        |(suit_index, rank_index)| {
+            Card {
+                suit: suit_index,
+                rank: rank_index,
+            }
+        }
+    ).collect::<Vec<_>>();
+}
+
+struct Column {
+    hidden_index: usize,
     cards: Vec<Card>,
 }
 
-
 struct Table {
-    piles: Vec<Pile>,
+    columns: Vec<Column>,
 }
 
-impl Table {
-    fn draw(&self) {
-        let mut row = 0;
-        loop {
-            let mut any_match = false;
-            for pile in self.piles.iter() {
-                match pile.cards.get(row) {
-                    Some(card) => {
-                        print!("{}", card.to_string());
-                        any_match = true;
-                    },
-                    None => print!("."),
-                }
-                print!("\t")
+fn deal(deck: Vec<Card>) -> Table {
+    let mut columns = vec![];
+    let mut start = 0;
+    let mut end = 1;
+    for column_number in 0..7 {
+        columns.push(
+            Column {
+                hidden_index: column_number,
+                cards: deck[start..end].to_vec(),
             }
-            print!("\n");
-            if ! any_match {
-                break;
-            }
-            row = row + 1;
+        );
+        start = end;
+        end = end + 6 + column_number;
+    }
+    return Table {
+        columns: columns,
+    }
+}
+
+fn draw(table: Table) {
+    let mut column_card_iterators = table.columns.iter().map(
+        |column| {
+            column.cards.iter()
         }
-    }
-}
-
-
-struct Deck {
-    cards: Vec<Card>
-
-}
-
-impl Deck {
-    pub fn new() -> Self {
-        let mut cards: Vec<Card> = vec![];
-        for suit in SUIT::iterator() {
-            for c in 1..14 {
-                cards.push(Card {rank: c, suit: *suit});
-            }
+    ).collect::<Vec<_>>();
+    print!(
+        "\t{}\n\n",
+        join(
+            (1..1 + table.columns.len()).map(|i| i.to_string()),
+            "\t"
+        )
+    );
+    let mut row_index = 0;
+    loop {
+        let mut row = vec![row_index.to_string()];
+        let mut card_found = false;
+        for (column_index, column) in table.columns.iter().enumerate() {
+            let mut card_char = match column_card_iterators[column_index].next() {
+                Some(card) => {
+                    card_found = true;
+                    char_for_card(*card).unwrap().to_string()
+                },
+                None => "-".to_string(),
+            };
+            if card_found && row_index < column.hidden_index {
+                card_char = "X".to_string();
+            };
+            row.push(card_char);
         }
-        return Deck { cards: cards };
+        if card_found {
+            print!("{}\n\n", join(row, "\t"));
+        } else {
+            break;
+        }
+        row_index += 1;
     }
-
-    fn shuffle(&mut self) {
-        let mut rng = thread_rng();
-        rng.shuffle(&mut self.cards);
-    }
+    print!("\n");
 }
-
 
 fn main() {
-
-    //SUIT::char_for(DIAMOND);
-    let mut deck = Deck::new();
-    deck.shuffle();
-    let pile = Pile{cards: deck.cards, hidden_index: 0};
-    let piles = vec![
-        pile,
-        Pile {cards: vec![], hidden_index:0 },
-        Pile {cards: vec![], hidden_index:0 },
-        Pile {cards: vec![], hidden_index:0 },
-    ];
-    let t = Table{piles: piles};
-    t.draw();
+    let deck = new_deck();
+    let shuffled_deck = shuffle(deck);
+    let table = deal(shuffled_deck);
+    draw(table);
 }
