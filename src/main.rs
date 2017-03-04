@@ -5,17 +5,10 @@ extern crate unicode_names;
 use rand::{thread_rng, Rng};
 use itertools::join;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone)]
 struct Card {
     suit: usize,
     rank: usize,
-}
-
-fn shuffle<T>(original_vector: Vec<T>) -> Vec<T> {
-    let mut shuffled_vector = original_vector;
-    let mut rng = thread_rng();
-    rng.shuffle(&mut shuffled_vector);
-    return shuffled_vector;
 }
 
 fn suit_name_by_index(suit_index: usize) -> Option<&'static str> {
@@ -47,7 +40,7 @@ fn rank_name_by_index(rank_index: usize) -> Option<&'static str> {
     }
 }
 
-fn char_for_card(card: Card) -> Option<char> {
+fn char_for_card(card: &Card) -> Option<char> {
     let unicode_name = format!(
         "PLAYING CARD {} OF {}S",
         rank_name_by_index(card.rank).unwrap(),
@@ -56,17 +49,34 @@ fn char_for_card(card: Card) -> Option<char> {
     return unicode_names::character(&unicode_name);
 }
 
-fn new_deck() -> Vec<Card> {
-    let suits = 0..4;
-    let ranks = 1..14;
-    return iproduct!(suits, ranks).map(
-        |(suit_index, rank_index)| {
-            Card {
-                suit: suit_index,
-                rank: rank_index,
-            }
-        }
-    ).collect::<Vec<_>>();
+struct Deck {
+    cards: Vec<Card>,
+}
+
+impl Deck {
+    fn new() -> Deck {
+        let suits = 0..4;
+        let ranks = 1..14;
+        return Deck {
+            cards: iproduct!(suits, ranks).map(
+                |(suit_index, rank_index)| {
+                    Card {
+                        suit: suit_index,
+                        rank: rank_index,
+                    }
+                }
+            ).collect(),
+        };
+    }
+
+    fn shuffle(&self) -> Deck {
+        let mut cards = self.cards.to_vec();
+        let mut rng = thread_rng();
+        rng.shuffle(&mut cards);
+        return Deck {
+            cards: cards,
+        };
+    }
 }
 
 struct Column {
@@ -78,7 +88,7 @@ struct Table {
     columns: Vec<Column>,
 }
 
-fn deal(deck: Vec<Card>) -> Table {
+fn deal(deck: Deck) -> Table {
     let mut columns = vec![];
     let mut start = 0;
     let mut end = 1;
@@ -86,7 +96,7 @@ fn deal(deck: Vec<Card>) -> Table {
         columns.push(
             Column {
                 hidden_index: column_number,
-                cards: deck[start..end].to_vec(),
+                cards: deck.cards[start..end].to_vec(),
             }
         );
         start = end;
@@ -118,7 +128,7 @@ fn draw(table: Table) {
             let mut card_char = match column_card_iterators[column_index].next() {
                 Some(card) => {
                     card_found = true;
-                    char_for_card(*card).unwrap().to_string()
+                    char_for_card(card).unwrap().to_string()
                 },
                 None => "-".to_string(),
             };
@@ -138,8 +148,8 @@ fn draw(table: Table) {
 }
 
 fn main() {
-    let deck = new_deck();
-    let deck = shuffle(deck);
+    let deck = Deck::new()
+        .shuffle();
     let table = deal(deck);
     draw(table);
 }
