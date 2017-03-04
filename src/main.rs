@@ -11,7 +11,6 @@ struct Card {
     rank: usize,
 }
 
-
 fn shuffle<T>(original_vector: Vec<T>) -> Vec<T> {
     let mut shuffled_vector = original_vector;
     let mut rng = thread_rng();
@@ -107,7 +106,7 @@ fn draw(table: Table) {
     print!(
         "\t{}\n\n",
         join(
-            (1..1 + table.columns.len()).map(|i| i.to_string()),
+            (0..table.columns.len()).map(|i| i.to_string()),
             "\t"
         )
     );
@@ -140,7 +139,7 @@ fn draw(table: Table) {
 
 fn main() {
     let deck = new_deck();
-    let shuffled_deck = shuffle(deck);
-    let table = deal(shuffled_deck);
+    let deck = shuffle(deck);
+    let table = deal(deck);
     draw(table);
 }
