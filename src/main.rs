@@ -5,48 +5,52 @@ extern crate unicode_names;
 use rand::{thread_rng, Rng};
 use itertools::join;
 
+struct Suit {
+    name: &'static str,
+}
+
+static SUITS: [Suit; 4] = [
+    Suit{name: "CLUB"},
+    Suit{name: "DIAMOND"},
+    Suit{name: "HEART"},
+    Suit{name: "SPADE"},
+];
+
+struct Rank {
+    name: &'static str,
+}
+
+static RANKS: [Rank; 13] = [
+    Rank{name: "ACE"},
+    Rank{name: "TWO"},
+    Rank{name: "THREE"},
+    Rank{name: "FOUR"},
+    Rank{name: "FIVE"},
+    Rank{name: "SIX"},
+    Rank{name: "SEVEN"},
+    Rank{name: "EIGHT"},
+    Rank{name: "NINE"},
+    Rank{name: "TEN"},
+    Rank{name: "JACK"},
+    Rank{name: "QUEEN"},
+    Rank{name: "KING"},
+];
+
 #[derive(Clone)]
 struct Card {
-    suit: usize,
-    rank: usize,
+    suit: &'static Suit,
+    rank: &'static Rank,
 }
 
-fn suit_name_by_index(suit_index: usize) -> Option<&'static str> {
-    return match suit_index {
-        0 => Some("CLUB"),
-        1 => Some("DIAMOND"),
-        2 => Some("HEART"),
-        3 => Some("SPADE"),
-        _ => None,
+impl Card {
+    fn to_char(&self) -> Option<char> {
+        let unicode_name = format!(
+            "PLAYING CARD {} OF {}S",
+            self.rank.name,
+            self.suit.name,
+        );
+        return unicode_names::character(&unicode_name);
     }
-}
-
-fn rank_name_by_index(rank_index: usize) -> Option<&'static str> {
-    return match rank_index {
-        1 => Some("ACE"),
-        2 => Some("TWO"),
-        3 => Some("THREE"),
-        4 => Some("FOUR"),
-        5 => Some("FIVE"),
-        6 => Some("SIX"),
-        7 => Some("SEVEN"),
-        8 => Some("EIGHT"),
-        9 => Some("NINE"),
-        10 => Some("TEN"),
-        11 => Some("JACK"),
-        12 => Some("QUEEN"),
-        13 => Some("KING"),
-        _ => None,
-    }
-}
-
-fn char_for_card(card: &Card) -> Option<char> {
-    let unicode_name = format!(
-        "PLAYING CARD {} OF {}S",
-        rank_name_by_index(card.rank).unwrap(),
-        suit_name_by_index(card.suit).unwrap(),
-    );
-    return unicode_names::character(&unicode_name);
 }
 
 struct Deck {
@@ -55,14 +59,12 @@ struct Deck {
 
 impl Deck {
     fn new() -> Deck {
-        let suits = 0..4;
-        let ranks = 1..14;
         return Deck {
-            cards: iproduct!(suits, ranks).map(
-                |(suit_index, rank_index)| {
+            cards: iproduct!(SUITS.iter(), RANKS.iter()).map(
+                |(suit, rank)| {
                     Card {
-                        suit: suit_index,
-                        rank: rank_index,
+                        suit: suit,
+                        rank: rank,
                     }
                 }
             ).collect(),
@@ -128,7 +130,7 @@ fn draw(table: Table) {
             let mut card_char = match column_card_iterators[column_index].next() {
                 Some(card) => {
                     card_found = true;
-                    char_for_card(card).unwrap().to_string()
+                    card.to_char().unwrap().to_string()
                 },
                 None => "-".to_string(),
             };
