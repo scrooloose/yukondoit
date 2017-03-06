@@ -36,7 +36,6 @@ static RANKS: [Rank; 13] = [
     Rank{name: "KING"},
 ];
 
-#[derive(Clone)]
 struct Card {
     suit: &'static Suit,
     rank: &'static Rank,
@@ -71,26 +70,23 @@ impl Deck {
         };
     }
 
-    fn shuffle(&self) -> Deck {
-        let mut cards = self.cards.to_vec();
+    fn shuffle(mut self) -> Deck {
         let mut rng = thread_rng();
-        rng.shuffle(&mut cards);
-        return Deck {
-            cards: cards,
-        };
+        rng.shuffle(&mut self.cards);
+        return self;
     }
 }
 
-struct Column {
+struct Column <'a> {
     hidden_index: usize,
-    cards: Vec<Card>,
+    cards: Vec<&'a Card>,
 }
 
-struct Table {
-    columns: Vec<Column>,
+struct Table <'a> {
+    columns: Vec<Column<'a>>,
 }
 
-fn deal(deck: Deck) -> Table {
+fn deal(deck: &Deck) -> Table {
     let mut columns = vec![];
     let mut start = 0;
     let mut end = 1;
@@ -98,7 +94,7 @@ fn deal(deck: Deck) -> Table {
         columns.push(
             Column {
                 hidden_index: column_number,
-                cards: deck.cards[start..end].to_vec(),
+                cards: deck.cards[start..end].iter().collect(),
             }
         );
         start = end;
@@ -150,8 +146,7 @@ fn draw(table: Table) {
 }
 
 fn main() {
-    let deck = Deck::new()
-        .shuffle();
-    let table = deal(deck);
+    let deck = Deck::new().shuffle();
+    let table = deal(&deck);
     draw(table);
 }
