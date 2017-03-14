@@ -7,3 +7,4 @@ authors = ["Martin Grenfell <martin.grenfell@gmail.com>"]
 rand = "*"
 unicode_names = { git = 'https://github.com/antifuchs/unicode_names', branch = 'fix-for-rust-1-10' }
 itertools = "*"
+text_io = "*"

@@ -1,7 +1,9 @@
 extern crate rand;
 extern crate unicode_names;
 #[macro_use] extern crate itertools;
-
+#[macro_use] extern crate text_io;
+use std::{io};
+use std::io::{Write};
 use rand::{thread_rng, Rng};
 use itertools::join;
 
@@ -86,6 +88,73 @@ struct Table <'a> {
     columns: Vec<Column<'a>>,
 }
 
+impl <'a> Clone for Table <'a> {
+    fn clone(&self) -> Self {
+        return Table {
+            columns: self.columns.iter().map(
+                |column| {
+                    Column {
+                        hidden_index: column.hidden_index,
+                        cards: column.cards.clone()
+                    }
+                }
+            ).collect()
+        };
+    }
+}
+
+impl <'a> Table <'a> {
+    fn move_card(&self, source: Coordinate, destination: Coordinate) -> Self {
+        // let moving_cards = self.columns[x].cards.split_off(y);
+        // self.columns[target_column].cards.extend(moving_cards);
+        let mut new_table = self.clone();
+        let moving_cards = new_table.columns[source.x].cards.split_off(source.y);
+        new_table.columns[destination.x].cards.extend(moving_cards);
+        return new_table;
+    }
+
+    fn draw(&self) -> &Self {
+        let mut column_card_iterators = self.columns.iter().map(
+            |column| {
+                column.cards.iter()
+            }
+        ).collect::<Vec<_>>();
+        print!(
+            "\t{}\n\n",
+            join(
+                (0..self.columns.len()).map(|i| i.to_string()),
+                "\t"
+            )
+        );
+        let mut row_index = 0;
+        loop {
+            let mut row = vec![row_index.to_string()];
+            let mut card_found = false;
+            for (column_index, column) in self.columns.iter().enumerate() {
+                let mut card_char = match column_card_iterators[column_index].next() {
+                    Some(card) => {
+                        card_found = true;
+                        card.to_char().unwrap().to_string()
+                    },
+                    None => "-".to_string(),
+                };
+                if card_found && row_index < column.hidden_index {
+                    card_char = "X".to_string();
+                };
+                row.push(card_char);
+            }
+            if card_found {
+                print!("{}\n\n", join(row, "\t"));
+            } else {
+                break;
+            }
+            row_index += 1;
+        }
+        print!("\n");
+        return self;
+    }
+}
+
 fn deal(deck: &Deck) -> Table {
     let mut columns = vec![];
     let mut start = 0;
@@ -105,48 +174,41 @@ fn deal(deck: &Deck) -> Table {
     }
 }
 
-fn draw(table: Table) {
-    let mut column_card_iterators = table.columns.iter().map(
-        |column| {
-            column.cards.iter()
-        }
-    ).collect::<Vec<_>>();
-    print!(
-        "\t{}\n\n",
-        join(
-            (0..table.columns.len()).map(|i| i.to_string()),
-            "\t"
-        )
-    );
-    let mut row_index = 0;
-    loop {
-        let mut row = vec![row_index.to_string()];
-        let mut card_found = false;
-        for (column_index, column) in table.columns.iter().enumerate() {
-            let mut card_char = match column_card_iterators[column_index].next() {
-                Some(card) => {
-                    card_found = true;
-                    card.to_char().unwrap().to_string()
-                },
-                None => "-".to_string(),
-            };
-            if card_found && row_index < column.hidden_index {
-                card_char = "X".to_string();
-            };
-            row.push(card_char);
-        }
-        if card_found {
-            print!("{}\n\n", join(row, "\t"));
-        } else {
-            break;
-        }
-        row_index += 1;
+#[derive(Debug)]
+struct Coordinate {
+    x: usize,
+    y: usize,
+}
+
+fn read_coordinate(message: &str) -> Coordinate {
+    println!("{}", message);
+    io::stdout().write(b"x: ").ok();
+    io::stdout().flush().ok();
+    let mut x = String::new();
+    io::stdin().read_line(&mut x).ok();
+    let x: usize = x.trim().parse().expect("x must be an int");
+
+    io::stdout().write(b"y: ").ok();
+    io::stdout().flush().ok();
+    let mut y = String::new();
+    io::stdin().read_line(&mut y).ok();
+    let y: usize = y.trim().parse().expect("y must be an int");
+
+    return Coordinate {
+        x: x,
+        y: y,
     }
-    print!("\n");
 }
 
 fn main() {
     let deck = Deck::new().shuffle();
-    let table = deal(&deck);
-    draw(table);
+    let table = (0..).fold(
+        deal(&deck),
+        |t, i| {
+            t.draw();
+            let source = read_coordinate("Enter a source coordinate.");
+            let destination = read_coordinate("Enter a destination coordinate.");
+            return t.move_card(source, destination);
+        }
+    );
 }
