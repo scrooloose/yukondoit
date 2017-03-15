@@ -2,7 +2,6 @@ extern crate rand;
 extern crate unicode_names;
 extern crate colored;
 #[macro_use] extern crate itertools;
-#[macro_use] extern crate text_io;
 use std::{io};
 use std::io::{Write};
 use rand::{thread_rng, Rng};
