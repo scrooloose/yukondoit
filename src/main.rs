@@ -1,9 +1,10 @@
 extern crate rand;
 extern crate unicode_names;
 extern crate colored;
-#[macro_use] extern crate itertools;
-use std::{io};
-use std::io::{Write};
+#[macro_use]
+extern crate itertools;
+use std::io;
+use std::io::Write;
 use rand::{thread_rng, Rng};
 use itertools::join;
 use colored::*;
@@ -12,32 +13,28 @@ struct Suit {
     name: &'static str,
 }
 
-static SUITS: [Suit; 4] = [
-    Suit{name: "CLUB"},
-    Suit{name: "DIAMOND"},
-    Suit{name: "HEART"},
-    Suit{name: "SPADE"},
-];
+static SUITS: [Suit; 4] = [Suit { name: "CLUB" },
+                           Suit { name: "DIAMOND" },
+                           Suit { name: "HEART" },
+                           Suit { name: "SPADE" }];
 
 struct Rank {
     name: &'static str,
 }
 
-static RANKS: [Rank; 13] = [
-    Rank{name: "ACE"},
-    Rank{name: "TWO"},
-    Rank{name: "THREE"},
-    Rank{name: "FOUR"},
-    Rank{name: "FIVE"},
-    Rank{name: "SIX"},
-    Rank{name: "SEVEN"},
-    Rank{name: "EIGHT"},
-    Rank{name: "NINE"},
-    Rank{name: "TEN"},
-    Rank{name: "JACK"},
-    Rank{name: "QUEEN"},
-    Rank{name: "KING"},
-];
+static RANKS: [Rank; 13] = [Rank { name: "ACE" },
+                            Rank { name: "TWO" },
+                            Rank { name: "THREE" },
+                            Rank { name: "FOUR" },
+                            Rank { name: "FIVE" },
+                            Rank { name: "SIX" },
+                            Rank { name: "SEVEN" },
+                            Rank { name: "EIGHT" },
+                            Rank { name: "NINE" },
+                            Rank { name: "TEN" },
+                            Rank { name: "JACK" },
+                            Rank { name: "QUEEN" },
+                            Rank { name: "KING" }];
 
 struct Card {
     suit: &'static Suit,
@@ -62,14 +59,14 @@ struct Deck {
 impl Deck {
     fn new() -> Deck {
         return Deck {
-            cards: iproduct!(SUITS.iter(), RANKS.iter()).map(
-                |(suit, rank)| {
+            cards: iproduct!(SUITS.iter(), RANKS.iter())
+                .map(|(suit, rank)| {
                     Card {
                         suit: suit,
                         rank: rank,
                     }
-                }
-            ).collect(),
+                })
+                .collect(),
         };
     }
 
@@ -80,53 +77,47 @@ impl Deck {
     }
 }
 
-struct Column <'a> {
+struct Column<'a> {
     hidden_index: usize,
     cards: Vec<&'a Card>,
 }
 
-struct Table <'a> {
+struct Table<'a> {
     columns: Vec<Column<'a>>,
 }
 
-impl <'a> Clone for Table <'a> {
+impl<'a> Clone for Table<'a> {
     fn clone(&self) -> Self {
         return Table {
-            columns: self.columns.iter().map(
-                |column| {
+            columns: self.columns
+                .iter()
+                .map(|column| {
                     Column {
                         hidden_index: column.hidden_index,
-                        cards: column.cards.clone()
+                        cards: column.cards.clone(),
                     }
-                }
-            ).collect()
+                })
+                .collect(),
         };
     }
 }
 
-impl <'a> Table <'a> {
+impl<'a> Table<'a> {
     fn move_card(&self, source: Coordinate, destination: Coordinate) -> Self {
         let mut new_table = self.clone();
         let moving_cards = new_table.columns[source.x].cards.split_off(source.y);
         new_table.columns[destination.x].cards.extend(moving_cards);
         return new_table;
     }
-
 }
 
 fn draw(table: &Table) {
-    let mut column_card_iterators = table.columns.iter().map(
-        |column| {
-            column.cards.iter()
-        }
-    ).collect::<Vec<_>>();
-    print!(
-        "\t{}\n\n",
-        join(
-            (0..table.columns.len()).map(|i| i.to_string()),
-            "\t"
-        )
-    );
+    let mut column_card_iterators = table.columns
+        .iter()
+        .map(|column| column.cards.iter())
+        .collect::<Vec<_>>();
+    print!("\t{}\n\n",
+           join((0..table.columns.len()).map(|i| i.to_string()), "\t"));
     let mut row_index = 0;
     loop {
         let mut row = vec![row_index.to_string().white()];
@@ -140,7 +131,7 @@ fn draw(table: &Table) {
                         "DIAMOND" | "HEART" => card_string.red(),
                         _ => card_string.white(),
                     }
-                },
+                }
                 None => "-".to_string().white(),
             };
             if card_found && row_index < column.hidden_index {
@@ -163,18 +154,14 @@ fn deal(deck: &Deck) -> Table {
     let mut start = 0;
     let mut end = 1;
     for column_number in 0..7 {
-        columns.push(
-            Column {
-                hidden_index: column_number,
-                cards: deck.cards[start..end].iter().collect(),
-            }
-        );
+        columns.push(Column {
+            hidden_index: column_number,
+            cards: deck.cards[start..end].iter().collect(),
+        });
         start = end;
         end = end + 6 + column_number;
     }
-    return Table {
-        columns: columns,
-    }
+    return Table { columns: columns };
 }
 
 #[derive(Debug)]
@@ -197,21 +184,15 @@ fn read_coordinate(message: &str) -> Coordinate {
     io::stdin().read_line(&mut y).ok();
     let y: usize = y.trim().parse().expect("y must be an int");
 
-    return Coordinate {
-        x: x,
-        y: y,
-    }
+    return Coordinate { x: x, y: y };
 }
 
 fn main() {
     let deck = Deck::new().shuffle();
-    (0..).fold(
-        deal(&deck),
-        |t, _| {
-            draw(&t);
-            let source = read_coordinate("Enter a source coordinate.");
-            let destination = read_coordinate("Enter a destination coordinate.");
-            return t.move_card(source, destination);
-        }
-    );
+    (0..).fold(deal(&deck), |t, _| {
+        draw(&t);
+        let source = read_coordinate("Enter a source coordinate.");
+        let destination = read_coordinate("Enter a destination coordinate.");
+        return t.move_card(source, destination);
+    });
 }
