@@ -106,58 +106,56 @@ impl <'a> Clone for Table <'a> {
 
 impl <'a> Table <'a> {
     fn move_card(&self, source: Coordinate, destination: Coordinate) -> Self {
-        // let moving_cards = self.columns[x].cards.split_off(y);
-        // self.columns[target_column].cards.extend(moving_cards);
         let mut new_table = self.clone();
         let moving_cards = new_table.columns[source.x].cards.split_off(source.y);
         new_table.columns[destination.x].cards.extend(moving_cards);
         return new_table;
     }
 
-    fn draw(&self) -> &Self {
-        let mut column_card_iterators = self.columns.iter().map(
-            |column| {
-                column.cards.iter()
-            }
-        ).collect::<Vec<_>>();
-        print!(
-            "\t{}\n\n",
-            join(
-                (0..self.columns.len()).map(|i| i.to_string()),
-                "\t"
-            )
-        );
-        let mut row_index = 0;
-        loop {
-            let mut row = vec![row_index.to_string().white()];
-            let mut card_found = false;
-            for (column_index, column) in self.columns.iter().enumerate() {
-                let mut card_char = match column_card_iterators[column_index].next() {
-                    Some(card) => {
-                        card_found = true;
-                        let card_string = card.to_char().unwrap().to_string();
-                        match card.suit.name {
-                            "DIAMOND" | "HEART" => card_string.red(),
-                            _ => card_string.white(),
-                        }
-                    },
-                    None => "-".to_string().white(),
-                };
-                if card_found && row_index < column.hidden_index {
-                    card_char = "X".to_string().white();
-                };
-                row.push(card_char);
-            }
-            if card_found {
-                print!("{}\n\n", join(row, "\t"));
-            } else {
-                break;
-            }
-            row_index += 1;
+}
+
+fn draw(table: &Table) {
+    let mut column_card_iterators = table.columns.iter().map(
+        |column| {
+            column.cards.iter()
         }
-        print!("\n");
-        return self;
+    ).collect::<Vec<_>>();
+    print!(
+        "\t{}\n\n",
+        join(
+            (0..table.columns.len()).map(|i| i.to_string()),
+            "\t"
+        )
+    );
+    let mut row_index = 0;
+    loop {
+        let mut row = vec![row_index.to_string().white()];
+        let mut card_found = false;
+        for (column_index, column) in table.columns.iter().enumerate() {
+            let mut card_char = match column_card_iterators[column_index].next() {
+                Some(card) => {
+                    card_found = true;
+                    let card_string = card.to_char().unwrap().to_string();
+                    match card.suit.name {
+                        "DIAMOND" | "HEART" => card_string.red(),
+                        _ => card_string.white(),
+                    }
+                },
+                None => "-".to_string().white(),
+            };
+            if card_found && row_index < column.hidden_index {
+                card_char = "X".to_string().white();
+            };
+            row.push(card_char);
+        }
+        if card_found {
+            print!("{}\n\n", join(row, "\t"));
+        } else {
+            break;
+        }
+        row_index += 1;
     }
+    print!("\n");
 }
 
 fn deal(deck: &Deck) -> Table {
@@ -207,10 +205,10 @@ fn read_coordinate(message: &str) -> Coordinate {
 
 fn main() {
     let deck = Deck::new().shuffle();
-    let table = (0..).fold(
+    (0..).fold(
         deal(&deck),
-        |t, i| {
-            t.draw();
+        |t, _| {
+            draw(&t);
             let source = read_coordinate("Enter a source coordinate.");
             let destination = read_coordinate("Enter a destination coordinate.");
             return t.move_card(source, destination);
