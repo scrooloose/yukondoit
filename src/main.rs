@@ -191,6 +191,7 @@ impl<'a> Table<'a> {
 }
 
 fn draw(table: &Table) {
+    let movable_cards = movable_cards(&table);
     let mut column_card_iterators = table.columns
         .iter()
         .map(|column| column.cards.iter())
@@ -205,13 +206,21 @@ fn draw(table: &Table) {
             let mut card_char = match column_card_iterators[column_index].next() {
                 Some(card) => {
                     card_found = true;
-                    card.to_string()
+                    let mut card_string = card.to_string();
+                    if movable_cards.contains(&card) {
+                        card_string = card_string.bold();
+                    } else {
+                        card_string = card_string.dimmed();
+                    }
+                    card_string
                 }
                 None => "-".to_string().white(),
             };
-            if card_found && row_index < column.hidden_index {
-                card_char = "X".to_string().white();
-            };
+            if card_found {
+                if row_index < column.hidden_index {
+                    card_char = "x".to_string().white();
+                }
+            }
             row.push(card_char);
         }
         if card_found {
@@ -281,21 +290,21 @@ fn next_cards<'a, 'b>(table: &'a Table, last_card: &'b Card) -> Vec<&'a Card> {
     return next;
 }
 
-fn show_moves(table: &Table) {
+fn movable_cards<'a>(table: &'a Table) -> Vec<&'a Card>{
+    let mut movable_cards = vec![];
     for column in table.columns.iter() {
         let last_card = column.cards.last().unwrap();
         for card in next_cards(&table, last_card) {
-            print!("{} / {}\t", card.to_string(), last_card.to_string());
+            movable_cards.push(card);
         }
     }
-    println!("");
+    return movable_cards;
 }
 
 fn main() {
     let deck = Deck::new().shuffle();
     (0..).fold(deal(&deck), |t, _| {
         draw(&t);
-        show_moves(&t);
         let source = read_coordinate("Enter a source coordinate.");
         let destination = read_coordinate("Enter a destination coordinate.");
         return t.move_card(source, destination);
