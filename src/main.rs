@@ -116,13 +116,16 @@ impl PartialEq for Card {
 }
 
 impl Card {
-    fn to_string(&self) -> ColoredString {
+    fn to_char(&self) -> char {
         let unicode_name = format!(
             "PLAYING CARD {} OF {}S",
             self.rank.name,
             self.suit.name,
         );
-        let character = unicode_names::character(&unicode_name).unwrap().to_string();
+        return unicode_names::character(&unicode_name).unwrap()
+    }
+    fn to_string(&self) -> ColoredString {
+        let character = self.to_char().to_string();
         if self.suit.color == "RED" {
             return character.red();
         } else {
@@ -154,6 +157,16 @@ impl Deck {
         rng.shuffle(&mut self.cards);
         return self;
     }
+
+    fn card_from_char(&self, card_char: char) -> Option<&Card> {
+        for card in self.cards.iter() {
+            if card.to_char() == card_char {
+                return Some(card);
+            }
+        }
+        return None;
+    }
+
 }
 
 struct Column<'a> {
@@ -182,10 +195,19 @@ impl<'a> Clone for Table<'a> {
 }
 
 impl<'a> Table<'a> {
-    fn move_card(&self, source: Coordinate, destination: Coordinate) -> Self {
+    fn move_card(&self, next_move: Move) -> Self {
         let mut new_table = self.clone();
-        let moving_cards = new_table.columns[source.x].cards.split_off(source.y);
-        new_table.columns[destination.x].cards.extend(moving_cards);
+        for column in new_table.columns.iter_mut() {
+            for (i, &card) in column.cards.iter().enumerate() {
+                if card == next_move.source {
+                    let moving_cards = column.cards.split_off(i);
+
+                    break;
+                }
+            }
+        }
+        //let moving_cards = new_table.columns[source.x].cards.split_off(source.y);
+        // new_table.columns[destination.x].cards.extend(moving_cards);
         return new_table;
     }
 }
@@ -248,27 +270,18 @@ fn deal(deck: &Deck) -> Table {
     return Table { columns: columns };
 }
 
-#[derive(Debug)]
-struct Coordinate {
-    x: usize,
-    y: usize,
+fn read_card(prompt: &[u8]) -> char {
+    io::stdout().write(prompt).ok();
+    io::stdout().flush().ok();
+    let mut card_char = String::new();
+    io::stdin().read_line(&mut card_char).ok();
+    return card_char.chars().nth(0).unwrap();
 }
 
-fn read_coordinate(message: &str) -> Coordinate {
-    println!("{}", message);
-    io::stdout().write(b"x: ").ok();
-    io::stdout().flush().ok();
-    let mut x = String::new();
-    io::stdin().read_line(&mut x).ok();
-    let x: usize = x.trim().parse().expect("x must be an int");
-
-    io::stdout().write(b"y: ").ok();
-    io::stdout().flush().ok();
-    let mut y = String::new();
-    io::stdin().read_line(&mut y).ok();
-    let y: usize = y.trim().parse().expect("y must be an int");
-
-    return Coordinate { x: x, y: y };
+#[derive(Debug)]
+struct Move<'a> {
+    source: &'a Card,
+    destination: &'a Card,
 }
 
 fn next_cards<'a, 'b>(table: &'a Table, last_card: &'b Card) -> Vec<&'a Card> {
@@ -301,12 +314,24 @@ fn movable_cards<'a>(table: &'a Table) -> Vec<&'a Card>{
     return movable_cards;
 }
 
+
 fn main() {
     let deck = Deck::new().shuffle();
     (0..).fold(deal(&deck), |t, _| {
         draw(&t);
-        let source = read_coordinate("Enter a source coordinate.");
-        let destination = read_coordinate("Enter a destination coordinate.");
-        return t.move_card(source, destination);
+        let source_char = read_card(b"Source: ");
+        println!("{:?}", source_char);
+        let destination_char = read_card(b"Destination: ");
+        println!("{:?}", destination_char);
+        let source_card = &deck.card_from_char(source_char).unwrap();
+        println!("{:?}", source_card);
+        let destination_card = &deck.card_from_char(destination_char).unwrap();
+        println!("{:?}", destination_card);
+        let next_move = Move {
+            source: source_card,
+            destination: destination_card,
+        };
+        println!("{:?}", next_move);
+        return t.move_card(next_move);
     });
 }
