@@ -166,7 +166,6 @@ impl Deck {
         }
         return None;
     }
-
 }
 
 struct Column<'a> {
@@ -252,7 +251,6 @@ fn draw(table: &Table) {
         }
         row_index += 1;
     }
-    print!("\n");
 }
 
 fn deal(deck: &Deck) -> Table {
@@ -268,6 +266,29 @@ fn deal(deck: &Deck) -> Table {
         end = end + 6 + column_number;
     }
     return Table { columns: columns };
+}
+
+#[derive(Debug)]
+struct Coordinate {
+    x: usize,
+    y: usize,
+}
+
+fn read_coordinate(message: &str) -> Coordinate {
+    println!("{}", message);
+    io::stdout().write(b"x: ").ok();
+    io::stdout().flush().ok();
+    let mut x = String::new();
+    io::stdin().read_line(&mut x).ok();
+    let x: usize = x.trim().parse().expect("x must be an int");
+
+    io::stdout().write(b"y: ").ok();
+    io::stdout().flush().ok();
+    let mut y = String::new();
+    io::stdin().read_line(&mut y).ok();
+    let y: usize = y.trim().parse().expect("y must be an int");
+
+    return Coordinate { x: x, y: y };
 }
 
 fn read_card(prompt: &[u8]) -> char {
