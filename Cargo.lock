@@ -5,7 +5,6 @@ dependencies = [
  "colored 1.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "itertools 0.5.9 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
- "text_io 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "unicode_names 0.1.7 (git+https://github.com/antifuchs/unicode_names?branch=fix-for-rust-1-10)",
 ]
 
@@ -49,11 +48,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "text_io"
-version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
 name = "unicode_names"
 version = "0.1.7"
 source = "git+https://github.com/antifuchs/unicode_names?branch=fix-for-rust-1-10#65bde7973ab5e947be403ec66edf765c33eeaa61"
@@ -65,5 +59,4 @@ source = "git+https://github.com/antifuchs/unicode_names?branch=fix-for-rust-1-1
 "checksum lazy_static 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)" = "cf186d1a8aa5f5bee5fd662bc9c1b949e0259e1bcc379d1f006847b0080c7417"
 "checksum libc 0.2.20 (registry+https://github.com/rust-lang/crates.io-index)" = "684f330624d8c3784fb9558ca46c4ce488073a8d22450415c5eb4f4cfb0d11b5"
 "checksum rand 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)" = "022e0636ec2519ddae48154b028864bdce4eaf7d35226ab8e65c611be97b189d"
-"checksum text_io 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)" = "090d2ee73ae8f01646d500fbb72f99f0b2aea174b7b15d58359bbdf083f73e6d"
 "checksum unicode_names 0.1.7 (git+https://github.com/antifuchs/unicode_names?branch=fix-for-rust-1-10)" = "<none>"
