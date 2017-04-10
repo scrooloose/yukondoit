@@ -1,11 +1,13 @@
 extern crate rand;
 extern crate unicode_names;
+extern crate colored;
 #[macro_use] extern crate itertools;
 #[macro_use] extern crate text_io;
 use std::{io};
 use std::io::{Write};
 use rand::{thread_rng, Rng};
 use itertools::join;
+use colored::*;
 
 struct Suit {
     name: &'static str,
@@ -128,18 +130,22 @@ impl <'a> Table <'a> {
         );
         let mut row_index = 0;
         loop {
-            let mut row = vec![row_index.to_string()];
+            let mut row = vec![row_index.to_string().white()];
             let mut card_found = false;
             for (column_index, column) in self.columns.iter().enumerate() {
                 let mut card_char = match column_card_iterators[column_index].next() {
                     Some(card) => {
                         card_found = true;
-                        card.to_char().unwrap().to_string()
+                        let card_string = card.to_char().unwrap().to_string();
+                        match card.suit.name {
+                            "DIAMOND" | "HEART" => card_string.red(),
+                            _ => card_string.white(),
+                        }
                     },
-                    None => "-".to_string(),
+                    None => "-".to_string().white(),
                 };
                 if card_found && row_index < column.hidden_index {
-                    card_char = "X".to_string();
+                    card_char = "X".to_string().white();
                 };
                 row.push(card_char);
             }
