@@ -122,7 +122,7 @@ impl Card {
             self.rank.name,
             self.suit.name,
         );
-        return unicode_names::character(&unicode_name).unwrap()
+        return unicode_names::character(&unicode_name).unwrap();
     }
     fn to_string(&self) -> ColoredString {
         let character = self.to_char().to_string();
@@ -324,7 +324,7 @@ fn next_cards<'a, 'b>(table: &'a Table, last_card: &'b Card) -> Vec<&'a Card> {
     return next;
 }
 
-fn movable_cards<'a>(table: &'a Table) -> Vec<&'a Card>{
+fn movable_cards<'a>(table: &'a Table) -> Vec<&'a Card> {
     let mut movable_cards = vec![];
     for column in table.columns.iter() {
         let last_card = column.cards.last().unwrap();
